@@ -1,0 +1,9 @@
+body{
+    height:100vh;
+}
+.paginationBar{
+    margin: 10px;
+    position: relative;
+    width: 100%;
+    bottom:0;
+}
