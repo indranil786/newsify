@@ -1,25 +1,21 @@
 import React, { Component } from 'react'
 import { useState } from 'react'
+import { useEffect } from 'react'
 import "../styles/style.css"
 import PropTypes from 'prop-types'
 import News from './newsItem'
 import Spinner from './spinner'
 import axios from 'axios'
 import InfiniteScroll from 'react-infinite-scroll-component';
-export default class NewsArea extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            news: [],
-            offset: 0,
-            pageSize: 0,
-            pageNo: 0,
-            pageNoCount: 0,
-            pageLoading: false
-        }
-        this.count = 1;
-    }
-    fetchData = async () => {
+const NewsArea =()=> {
+    const [news,setNews]=useState([]);
+    const [pageNo,setPageNo]=useState(0);
+    const [pageNoCount,setPageNoCount]=useState(0);
+    const [pageLoading,setPageLoading]=useState(false);
+    const [offset,setOffset]=useState(0);
+    const [pageSize,setPageSize]=useState(0);
+    let count = 1;
+    const fetchData = async () => {
         let query = ''
         console.log(this.props.query)
         for (let item in this.props.query) {
@@ -27,12 +23,9 @@ export default class NewsArea extends Component {
                 query += `&${item}=${this.props.query[item]}`
         }
         const apiKey = "e086bc34690a2ea1dc945ce24f17a6db"
-        const url = `http://api.mediastack.com/v1/news?access_key=${apiKey}${query}&offset=${this.state.offset}`
+        const url = `http://api.mediastack.com/v1/news?access_key=${apiKey}${query}&offset=${offset}`
         console.log("This is the url : " + url)
-        this.setState({
-            pageLoading: true
-        })
-
+        setPageLoading(true);
         const response = await axios.get(url, {
             headers: {
                 "Content-Type": "application/json",
@@ -42,49 +35,40 @@ export default class NewsArea extends Component {
         const data = response.data.data;
         console.log("This is the array");
         console.log(data);
-        console.log("ComponentDidMount pageNo : " + this.state.pageNo)
-        console.log("ComponentDidMount Offet : " + this.state.offset)
-
-        this.setState({
-            news:data,
-            pageSize: response.data.pagination.total - (response.data.pagination.offset * 9),
-            pageLoading: false
-        })
-    }
-    componentDidMount() {
-        this.fetchData().then(() => { console.log("Data Fetched..") })
-
-    }
-    changePage = async (e) => {
+        console.log("ComponentDidMount pageNo : " + pageNo)
+        console.log("ComponentDidMount Offet : " + offset)
+        setNews(data);
+        setPageSize(response.data.pagination.total - (response.data.pagination.offset * 9));
+        setPageLoading(false);
+    }   
+    useEffect(()=>{
+        fetchData().then(() => { console.log("Data Fetched..")})   
+    })
+    const changePage = async (e) => {
         console.log("Hello Change Page")
         if (e.target.id === "back") {
             console.log("This is the Previous Button")
-            console.log("this is state details : " + this.state.offset + " " + this.state.pageNo)
+            console.log("this is state details : " + offset + " " + pageNo)
             //    await   this.setState(prev=>({
             //         offset: (prev.pageNo-1)*9,
             //         pageNo: (prev.pageNo-1),
             //         pageNoCount:prev.pageNoCount-1
             //     }))
-            await this.setState(prev => ({
-                pageNo: (prev.pageNo - 3),
-                offset: (prev.pageNo - 3) * 9,
-                pageNoCount: prev.pageNoCount - 3
-            }))
+            setPageNo((pageNo - 3));
+            setOffset((pageNo - 3) * 9);
+            setPageNoCount(pageNoCount - 3);
         }
         else if (e.target.id === "next") {
             console.log("This is the next button")
-            console.log("Next button pg before update : ", this.state.pageNo)
+            console.log("Next button pg before update : ", pageNo)
             //     await  this.setState(prev=>({
             //     offset: (prev.pageNo+1)*9,
             //     pageNo: (prev.pageNo+1),
             //     pageNoCount:prev.pageNoCount+1
             // }))
-            await this.setState(prev => ({
-                pageNo: prev.pageNo + 3,
-                offset: (prev.pageNo + 3) * 9,
-                pageNoCount: prev.pageNoCount + 3
-            }))
-
+            setPageNo(pageNo + 3);
+            setOffset((pageNo + 3) * 9);
+            setPageNoCount(pageNoCount + 3);
 
         }
         else {
@@ -94,18 +78,16 @@ export default class NewsArea extends Component {
             //    await this.setState(prev=>({
             //         offset:(pg-1)*9
             //     }))
-            //     console.log("This is the Page No ID : "+this.state.pageNo,)
-            await this.setState(prev => ({
-                offset: (pg - 1) * 9
-            }))
+            //     console.log("This is the Page No ID : "+pageNo,)
+            setOffset((pg - 1) * 9);
         }
-        console.log("Page No : " + this.state.pageNo);
-        console.log("Offset No : " + this.state.offset)
-        console.log("Page No Count : " + this.state.pageNoCount)
+        console.log("Page No : " + pageNo);
+        console.log("Offset No : " + offset)
+        console.log("Page No Count : " + pageNoCount)
         this.fetchData().then(() => { console.log("Fetched after change page") })
     }
 
-    render() {
+    
         return (
             <div className="container">
                 <h3>General News</h3>
@@ -125,12 +107,12 @@ export default class NewsArea extends Component {
                         
                         {
 
-                            this.state.pageLoading ? <Spinner /> : this.state.news.map((element) => {
+                            pageLoading ? <Spinner /> : news.map((element) => {
 
                                 return (<News author={element.author} title={element.title}
                                     description={element.description} url={element.url}
                                     source={element.source} image={element.image} category={element.category} language={element.language}
-                                    country={element.country} publishedAt={element.published_at} key={this.count++} />)
+                                    country={element.country} publishedAt={element.published_at} key={count++} />)
 
                             })
                         }
@@ -143,17 +125,17 @@ export default class NewsArea extends Component {
                         <ul className="pagination justify-content-center">
                             <li className="page-item">
                                 {
-                                    this.state.pageNoCount > 2 && <button className="page-link" aria-label="Previous" onClick={this.changePage} id="back" >«
+                                    pageNoCount > 2 && <button className="page-link" aria-label="Previous" onClick={this.changePage} id="back" >«
                                     </button>
                                 }
 
                             </li>
-                            <li className="page-item"><button className="page-link" onClick={this.changePage}>{this.state.pageNoCount + 1}</button></li>
-                            <li className="page-item"><button className="page-link" onClick={this.changePage}>{this.state.pageNoCount + 2}</button></li>
-                            <li className="page-item"><button className="page-link" onClick={this.changePage} id="lastPage">{this.state.pageNoCount + 3}</button></li>
+                            <li className="page-item"><button className="page-link" onClick={this.changePage}>{pageNoCount + 1}</button></li>
+                            <li className="page-item"><button className="page-link" onClick={this.changePage}>{pageNoCount + 2}</button></li>
+                            <li className="page-item"><button className="page-link" onClick={this.changePage} id="lastPage">{pageNoCount + 3}</button></li>
                             <li className="page-item">
                                 {
-                                    this.state.pageSize > 0 && <button className="page-link" aria-label="Next" id="next" onClick={this.changePage} >
+                                    pageSize > 0 && <button className="page-link" aria-label="Next" id="next" onClick={this.changePage} >
                                         »
                                     </button>
                                 }
@@ -164,5 +146,6 @@ export default class NewsArea extends Component {
                 </div>
             </div>
         )
-    }
+    
 }
+export default NewsArea;
