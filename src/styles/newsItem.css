@@ -1,0 +1,29 @@
+.cardItem{
+    color: black;
+    width: 25rem;
+}
+.rdMore{
+    /* position: absolute;
+    bottom:6px; */
+}
+.newsImage{
+    height: 300px;
+}
+.card-img-top{
+    border-radius:10px 10px 0px 0px;
+}
+.card{
+    border:1px solid #353333;
+    border-radius: 10px;
+    background-color: rgb(192, 182, 182);
+}
+.card-footer{
+    background-color:transparent;
+    border-top: none;
+    padding: 8px;
+}
+.sourcesBadge{
+    position: absolute;
+    right: -5px;
+    top: -10px;
+}
